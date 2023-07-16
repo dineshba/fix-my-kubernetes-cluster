@@ -1,4 +1,4 @@
-clusterName="issue1"
+clusterName="issue3"
 kind create cluster --name $clusterName
 printf "Waiting for nodes to be ready\n"
 kubectl wait --for=condition=Ready nodes --all --timeout=60s
@@ -14,13 +14,12 @@ while [ $defaultServiceAccountPresent -eq 0 ]; do
 done
 
 # create an issue
-docker exec -it $(docker ps | grep $clusterName | awk '{ print $1}') mv /etc/kubernetes/manifests/kube-scheduler.yaml /etc/kubernetes/
+kubectl get clusterrolebinding system:kube-scheduler -o yaml > clusterrolebinding.yaml
+kubectl delete clusterrolebinding system:kube-scheduler
 
 printf "\n"
 printf "Applying Pods\n"
 kubectl apply -f pod1.yaml
-kubectl wait --for=condition=Ready pods/nginx1 -n default --timeout=60s
-kubectl apply -f pod2.yaml
 printf "\n\nCan you help in making the pending pod run?\n"
 kubectl get pods -n default
 printf "\n\n"
