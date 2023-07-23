@@ -1,4 +1,5 @@
-clusterName="issue3"
+dirName=${PWD##*/}
+clusterName="issue$dirName"
 kind create cluster --name $clusterName
 printf "Waiting for nodes to be ready\n"
 kubectl wait --for=condition=Ready nodes --all --timeout=60s
@@ -14,8 +15,7 @@ while [ $defaultServiceAccountPresent -eq 0 ]; do
 done
 
 # create an issue
-kubectl get clusterrolebinding system:kube-scheduler -o yaml > clusterrolebinding.yaml
-kubectl delete clusterrolebinding system:kube-scheduler
+kubectl delete clusterrolebinding system:kube-scheduler > /dev/null 2>&1
 
 printf "\n"
 printf "Applying Pods\n"
