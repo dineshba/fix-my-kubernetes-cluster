@@ -25,7 +25,7 @@ date -s "2023-05-25 12:34:56" 1> /dev/null
 
 openssl genrsa -out mykube-scheduler.key 2048 1> /dev/null
 openssl req -new -key mykube-scheduler.key -subj "/CN=system:kube-scheduler" -addext "keyUsage = digitalSignature, keyEncipherment" -addext "extendedKeyUsage=TLS Web Client Authentication" -out kube-scheduler.csr 1> /dev/null 2> /dev/null
-openssl x509 -req -in kube-scheduler.csr -CA pki/ca.crt -CAkey pki/ca.key -CAcreateserial -addext "keyUsage = digitalSignature, keyEncipherment" -addext "extendedKeyUsage=TLS Web Client Authentication" -out mykube-scheduler.crt -days 10 1> /dev/null 2> /dev/null
+openssl x509 -req -in kube-scheduler.csr -CA pki/ca.crt -CAkey pki/ca.key -CAcreateserial -out mykube-scheduler.crt -days 10 1> /dev/null 2> /dev/null
 # openssl x509 -noout -in mykube-scheduler.crt -dates
 
 hwclock -s
