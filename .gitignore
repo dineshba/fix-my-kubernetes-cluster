@@ -1,5 +1,5 @@
 *.crt
 
-5/kube-proxy.yaml
+*/kube-proxy.yaml
 
 topic.md

@@ -14,30 +14,16 @@ while [ $defaultServiceAccountPresent -eq 0 ]; do
   defaultServiceAccountPresent=$(kubectl get sa -n default | grep default | wc -l)
 done
 
+kubectl create deploy utils --image=arunvelsriram/utils --replicas=1 -- sleep infinity
+kubectl wait --for=jsonpath='{.status.readyReplicas}'=1 deploy/utils --timeout=300s
+
 kubectl apply -f pod.yaml
 kubectl wait --for=jsonpath='{.status.phase}'=Running pod/nginx --timeout=300s
 kubectl apply -f svc.yaml
 
-containerId=$(docker ps | grep $clusterName | awk '{ print $1}')
-containerIP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $containerId)
-svcIP=$(kubectl get svc working-svc -o jsonpath='{.spec.clusterIP}')
+# create issue
+kubectl scale deploy/coredns -n kube-system --replicas=0
 
-svcWorking=1
-while [ $svcWorking -ne 0 ]; do
-  printf "Waiting for working-svc to work\n"
-  sleep 3
-  docker exec -it $containerId curl --connect-timeout 3 http://$svcIP:80
-  svcWorking=$(echo $?)
-done
-
-kubectl get ds/kube-proxy -n kube-system -o yaml > kube-proxy.yaml
-kubectl delete ds/kube-proxy -n kube-system
-
-kubectl apply -f svc2.yaml
-
-printf "\n\nNot able to reach not-working-svc using its IP. Can you help in fixing it?\n"
-printf "\n\n"
-
-# Commands used:
-# iptables -t nat -L PREROUTING
-# iptables -t nat -L KUBE-SERVICES
+# test
+kubectl exec -it deploy/utils -- curl http://working-svc:80
+kubectl exec -it deploy/utils -- curl http://kubernetes:80
