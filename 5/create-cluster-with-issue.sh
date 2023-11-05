@@ -27,3 +27,6 @@ kubectl scale deploy/coredns -n kube-system --replicas=0
 # test
 kubectl exec -it deploy/utils -- curl http://working-svc:80
 kubectl exec -it deploy/utils -- curl http://kubernetes:80
+
+printf "\n\nNot able to resolve working-svc. Can you help in fixing it?\n"
+printf "\n\n"
