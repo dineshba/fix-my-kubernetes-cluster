@@ -21,12 +21,24 @@ kubectl apply -f pod.yaml
 kubectl wait --for=jsonpath='{.status.phase}'=Running pod/nginx --timeout=300s
 kubectl apply -f svc.yaml
 
+sleep 3
+kubectl exec -it deploy/utils -- curl http://working-svc:80
+printf "working-svc is working now. Let's create an issue\n"
+
 # create issue
-kubectl scale deploy/coredns -n kube-system --replicas=0
+kubectl scale deploy/coredns -n kube-system --replicas=0 2> /dev/null 1> /dev/null
+sleep 10
 
 # test
 kubectl exec -it deploy/utils -- curl http://working-svc:80
-kubectl exec -it deploy/utils -- curl http://kubernetes:80
+printf "working-svc is not working now\n"
 
-printf "\n\nNot able to resolve working-svc. Can you help in fixing it?\n"
+printf "\n\nworking-svc is not reachable. Can you help in fixing it?\n"
 printf "\n\n"
+
+# Questions to be asked:
+# 0. Is nslookup working?
+# 2. What is /etc/resolv.conf in the utils container pointing to?
+# 1. How is the utils got /etc/resolv.conf? Who configured it?
+# 3. What is the configuration of the pointing service ?
+# 4. What is the search domain ? Is it same for all ns ?
