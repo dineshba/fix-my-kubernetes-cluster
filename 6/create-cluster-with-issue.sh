@@ -22,6 +22,9 @@ containerId=$(docker ps | grep $clusterName | awk '{ print $1}')
 containerIP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $containerId)
 svcIP=$(kubectl get svc working-svc -o jsonpath='{.spec.clusterIP}')
 
+kubectl create deploy utils --image=arunvelsriram/utils --replicas=1 -- sleep infinity
+kubectl wait --for=jsonpath='{.status.readyReplicas}'=1 deploy/utils --timeout=300s
+
 svcWorking=1
 while [ $svcWorking -ne 0 ]; do
   printf "Waiting for working-svc to work\n"
@@ -35,7 +38,10 @@ kubectl delete ds/kube-proxy -n kube-system
 
 kubectl apply -f svc2.yaml
 
-printf "\n\nNot able to reach not-working-svc using its IP. Can you help in fixing it?\n"
+kubectl exec -it deploy/utils -- curl --connect-timeout 3 http://not-working-svc:80
+printf "not-working-svc is not working now\n"
+
+printf "\n\nCan you help in fixing it?\n"
 printf "\n\n"
 
 # Commands used:
