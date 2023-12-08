@@ -38,6 +38,7 @@ kubectl delete ds/kube-proxy -n kube-system
 
 kubectl apply -f svc2.yaml
 
+printf "Executing kubectl exec -it deploy/utils -- curl --connect-timeout 3 http://not-working-svc:80\n"
 kubectl exec -it deploy/utils -- curl --connect-timeout 3 http://not-working-svc:80
 printf "not-working-svc is not working now\n"
 

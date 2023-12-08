@@ -30,6 +30,7 @@ kubectl scale deploy/coredns -n kube-system --replicas=0 2> /dev/null 1> /dev/nu
 sleep 10
 
 # test
+printf "Executing kubectl exec -it deploy/utils -- curl http://working-svc:80\n"
 kubectl exec -it deploy/utils -- curl http://working-svc:80
 printf "working-svc is not working now\n"
 
