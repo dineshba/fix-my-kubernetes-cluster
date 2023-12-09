@@ -12,10 +12,7 @@ spec:
   ingress:
     - from:
         - ipBlock:
-            cidr: 192.168.0.0/16
-            except:
-              - 192.168.5.5/32
-              - 192.168.6.6/32
+            cidr: 192.168.5.5/32
         - podSelector:
             matchLabels:
               role: frontend
