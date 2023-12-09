@@ -33,8 +33,9 @@ while [ $svcWorking -ne 0 ]; do
   svcWorking=$(echo $?)
 done
 
+printf "Creating issue\n"
 kubectl get ds/kube-proxy -n kube-system -o yaml > kube-proxy.yaml
-kubectl delete ds/kube-proxy -n kube-system
+kubectl delete ds/kube-proxy -n kube-system 2>/dev/null 1>/dev/null
 
 kubectl apply -f svc2.yaml
 
