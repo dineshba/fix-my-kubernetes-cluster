@@ -43,3 +43,6 @@ printf "\n\n"
 # 1. How is the utils got /etc/resolv.conf? Who configured it?
 # 3. What is the configuration of the pointing service ?
 # 4. What is the search domain ? Is it same for all ns ?
+# 5. configure dns for specific pod
+  # kubectl apply -f dnsconfigured-pod.yaml
+  # kubectl exec -it dns-example -- cat /etc/resolv.conf
