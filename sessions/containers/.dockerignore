@@ -1,0 +1,9 @@
+.git
+**/.git
+bin/
+dist/
+node_modules/
+test/
+*.md
+*Dockerfile*
+.DS_Store

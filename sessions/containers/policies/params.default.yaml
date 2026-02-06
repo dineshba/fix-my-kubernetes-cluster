@@ -1,0 +1,20 @@
+apiVersion: policy.example.dev/v1
+kind: ImagePolicyParams
+metadata:
+  name: default
+spec:
+  allowedRegistries:
+    - "ghcr.io/"
+    - "gcr.io/"
+    - "registry.k8s.io/"
+  blockedRegistries: []
+  requireDigest: true
+  requireSignature: true
+  signatureAnnotationKey: "cosign.sigstore.dev/verified"
+  signatureAnnotationValue: "true"
+  requireSBOM: true
+  sbomAnnotationKey: "sbom.dev/url"
+  sbomVerifiedKey: "sbom.dev/verified"
+  sbomRequiredFormats:
+    - "spdx"
+    - "cyclonedx"

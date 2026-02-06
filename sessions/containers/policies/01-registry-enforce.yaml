@@ -1,0 +1,42 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: registry-enforce.policy.example.com
+spec:
+  failurePolicy: Fail
+  paramKind:
+    apiVersion: policy.example.dev/v1
+    kind: ImagePolicyParams
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  variables:
+    - name: images
+      expression: "(has(object.spec.containers) ? object.spec.containers.map(c, c.image) : []) + (has(object.spec.initContainers) ? object.spec.initContainers.map(c, c.image) : []) + (has(object.spec.ephemeralContainers) ? object.spec.ephemeralContainers.map(c, c.image) : [])"
+  validations:
+    - expression: "params != null"
+      message: "Parameters not found for registry enforcement."
+      reason: Invalid
+    - expression: "size(params.spec.allowedRegistries) == 0 || variables.images.all(img, params.spec.allowedRegistries.exists(prefix, img.startsWith(prefix)))"
+      message: "Container image must be from an allowed registry."
+      reason: Forbidden
+    - expression: "size(params.spec.blockedRegistries) == 0 || variables.images.all(img, !params.spec.blockedRegistries.exists(prefix, img.startsWith(prefix)))"
+      message: "Container image uses a blocked registry."
+      reason: Forbidden
+    - expression: "!has(params.spec.requireDigest) || !params.spec.requireDigest || variables.images.all(img, img.matches('^.+@sha256:[0-9a-fA-F]{64}$'))"
+      message: "Digest required by policy."
+      reason: Invalid
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: registry-enforce-binding
+spec:
+  policyName: registry-enforce.policy.example.com
+  validationActions: ["Deny"]
+  paramRef:
+    name: default
+    parameterNotFoundAction: Deny

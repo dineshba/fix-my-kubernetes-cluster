@@ -1,0 +1,50 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: imagepolicyparams.policy.example.dev
+spec:
+  group: policy.example.dev
+  scope: Cluster
+  names:
+    plural: imagepolicyparams
+    singular: imagepolicyparams
+    kind: ImagePolicyParams
+    shortNames:
+      - ipp
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                allowedRegistries:
+                  type: array
+                  items:
+                    type: string
+                blockedRegistries:
+                  type: array
+                  items:
+                    type: string
+                requireDigest:
+                  type: boolean
+                requireSignature:
+                  type: boolean
+                signatureAnnotationKey:
+                  type: string
+                signatureAnnotationValue:
+                  type: string
+                requireSBOM:
+                  type: boolean
+                sbomAnnotationKey:
+                  type: string
+                sbomVerifiedKey:
+                  type: string
+                sbomRequiredFormats:
+                  type: array
+                  items:
+                    type: string

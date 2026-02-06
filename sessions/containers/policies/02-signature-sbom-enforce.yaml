@@ -1,0 +1,47 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: signature-sbom-enforce.policy.example.com
+spec:
+  failurePolicy: Fail
+  paramKind:
+    apiVersion: policy.example.dev/v1
+    kind: ImagePolicyParams
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  variables:
+    - name: images
+      expression: "(has(object.spec.containers) ? object.spec.containers.map(c, c.image) : []) + (has(object.spec.initContainers) ? object.spec.initContainers.map(c, c.image) : []) + (has(object.spec.ephemeralContainers) ? object.spec.ephemeralContainers.map(c, c.image) : [])"
+    - name: annotations
+      expression: "has(object.metadata.annotations) ? object.metadata.annotations : {}"
+  validations:
+    - expression: "params != null"
+      message: "Parameters not found for signature/SBOM enforcement."
+      reason: Invalid
+    - expression: "!params.spec.requireDigest || variables.images.all(img, img.matches('^.+@sha256:[0-9a-fA-F]{64}$'))"
+      message: "All images must use digests when required."
+      reason: Invalid
+    - expression: "!params.spec.requireSignature || ((size(params.spec.signatureAnnotationKey) > 0) && (params.spec.signatureAnnotationKey in variables.annotations) && (size(params.spec.signatureAnnotationValue) == 0 || variables.annotations[params.spec.signatureAnnotationKey] == params.spec.signatureAnnotationValue))"
+      messageExpression: "'Missing or invalid signature annotation: ' + params.spec.signatureAnnotationKey"
+      reason: Forbidden
+    - expression: "!params.spec.requireSBOM || ((size(params.spec.sbomAnnotationKey) > 0) && (params.spec.sbomAnnotationKey in variables.annotations))"
+      messageExpression: "'Missing SBOM annotation: ' + params.spec.sbomAnnotationKey"
+      reason: Forbidden
+    - expression: "!params.spec.requireSBOM || (size(params.spec.sbomVerifiedKey) == 0) || ((params.spec.sbomVerifiedKey in variables.annotations) && variables.annotations[params.spec.sbomVerifiedKey] == 'true')"
+      messageExpression: "'SBOM not marked verified via: ' + params.spec.sbomVerifiedKey"
+      reason: Forbidden
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: signature-sbom-enforce-binding
+spec:
+  policyName: signature-sbom-enforce.policy.example.com
+  validationActions: ["Deny"]
+  paramRef:
+    name: default
+    parameterNotFoundAction: Deny
